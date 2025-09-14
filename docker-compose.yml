@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    container_name: contact-form-web
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_FILE=/data/contacts.db
+    volumes:
+      - db_data:/data
+      - .:/app:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+volumes:
+  db_data:
+    driver: local
