@@ -4,16 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>U La Salle Contact Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
         <nav>
             <div class="nav-container">
-                <h1 class="logo">U La Salle</h1>
+                <div class="logo">
+                    <a href="index.html">
+                        <img src="img/LOGO_LASALLE.png" alt="Logo LaSalle">
+                    </a>
+                </div>
                 <ul class="nav-menu">
-                    <li><a href="index.html" class="active">Inicio</a></li>
-                    <li><a href="contact.html">Contacto</a></li>
+                    <li class="inicio_button"><a href="index.html">Inicio</a></li>
+                    <li><a href="contact.html">
+                                <img src="img/phone-icon.svg" alt="phone icon" class="icon-contact">
+                        Contacto
+                            </a>
+                    </li>
                 </ul>
             </div>
         </nav>
@@ -21,37 +31,76 @@
 
     <main>
         <section class="hero">
-            <div class="container">
-                <h1>Bienvenido a U La Salle</h1>
-                <p>Una plataforma de contacto simple y eficiente para conectar contigo.</p>
-                <a href="contact.html" class="cta-button">Contáctanos</a>
+            <div class="welcome-container">
+                <h1>Bienvenido a la</h1>
+                <h2>Universidad La Salle</h2>
+            </div>
+            <div class="hero-contact">
+                <a href="contact.html" >
+                                <img src="img/phone-icon.svg" alt="phone icon" class="icon-contact">
+                                Contáctanos
+                </a>
             </div>
         </section>
 
         <section class="features">
-            <div class="container">
-                <h2>¿Por qué contactarnos?</h2>
+            <div class="star-logo">
+                <img src="img/star-img.png" alt="imagen deestrella">
+            </div>
+            <div class="container-features">
+                <div class="title-features">
+                    <h2>¿Por qué contactarnos?</h2>
+                    <p>Estamos aquí para ayudarte en cada paso de tu camino educativo. Nuestro equipo está listo para resolver tus dudas.</p>
+                </div>
+                
                 <div class="features-grid">
-                    <div class="feature">
-                        <h3>Comunicación Directa</h3>
-                        <p>Envíanos tus consultas y te responderemos a la brevedad.</p>
+                    <div class="feature-item">
+                        <div class="icon-wrapper">
+                            <img src="img/phone2-icon.svg" alt="icono telefono">
+                        </div>
+                        
+                        <h3>Atención Personalizada</h3>
+                        <p>Recibe asesoría personalizada sobre programas académicos, admisiones y becas disponibles.</p>
                     </div>
-                    <div class="feature">
-                        <h3>Soporte Académico</h3>
-                        <p>Recibe información sobre nuestros programas y servicios.</p>
+                    <div class="feature-item">
+                         <div class="icon-wrapper">
+                            <img src="img/team-icon.svg" alt="icono equipo">
+                         </div>  
+                        <h3>Equipo Experto</h3>
+                        <p>Nuestro equipo de asesores educativos está capacitado para guiarte en tu decisión académica.</p>
                     </div>
-                    <div class="feature">
+                    <div class="feature-item">
+                         <div class="icon-wrapper">
+                            <img src="img/book-icon.svg" alt="icono equipo">
+                         </div>   
+                        <h3>Información Completa</h3>
+                        <p>Obtén información detallada sobre planes de estudio, costos, horarios y modalidades disponibles.</p>
+                    </div>
+                    <div class="feature-item">
+                         <div class="icon-wrapper">
+                            <img src="img/gold-icon.svg" alt="icono libro">
+                         </div>  
                         <h3>Respuesta Rápida</h3>
-                        <p>Nuestro equipo se compromete a responder en menos de 24 horas.</p>
+                        <p>Garantizamos respuesta a tus consultas en menos de 24 horas hábiles.</p>
                     </div>
                 </div>
+                
+            </div>
+            <div class="container-features_bottom">
+                <div class="title-features">
+                    <h2>¿Listo para comenzar tu futuro?</h2>
+                    <p>Ponte en contacto con nosotros para conocer más sobre nuestros programas académicos, proceso de admisión y oportunidades de becas.</p>
+                </div>
+            <div class="button-wrapper">
+                <a href="contact.html" class="contact-button">Solicitar información <img src="img/rigth-arrow.svg" alt="flecha icono"></a>
+            </div>
             </div>
         </section>
     </main>
 
     <footer>
         <div class="container">
-            <p>&copy; 2024 U La Salle. Todos los derechos reservados.</p>
+            <p>&copy; 2025 Universidad de La Salle. Todos los derechos reservados.</p>
         </div>
     </footer>
 
