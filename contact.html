@@ -1,57 +1,102 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contacto - U La Salle Contact Form</title>
     <link rel="stylesheet" href="styles.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+
+<body class="contact-page">
     <header>
         <nav>
             <div class="nav-container">
-                <h1 class="logo">U La Salle</h1>
+                <div class="logo">
+                    <a href="index.html">
+                        <img src="img/LOGO_LASALLE.png" alt="Logo LaSalle">
+                    </a>
+                </div>
                 <ul class="nav-menu">
-                    <li><a href="index.html">Inicio</a></li>
-                    <li><a href="contact.html" class="active">Contacto</a></li>
+                    <li><a href="index.html" class="inicio_button">Inicio</a></li>
+                    <li><a href="contact.html">
+                            <img src="img/phone-icon-black.svg" alt="phone icon" class="icon-contact">
+                            Contacto
+                        </a>
+                    </li>
                 </ul>
             </div>
         </nav>
     </header>
 
     <main>
+        <section class="form-title-section">
+            <div class="form-title">
+                <div class="star-logo">
+                    <img src="img/star-img.png" alt="imagen deestrella">
+                </div>
+                <h1>Ponte en Contacto</h1>
+                <p>Estamos aquí para ayudarte. Envíanos un mensaje y te responderemos pronto.</p>
+            </div>
+        </section>
         <section class="contact-form-section">
-            <div class="container">
-                <h1>Formulario de Contacto</h1>
-                <p>Completa el siguiente formulario y nos pondremos en contacto contigo.</p>
-                
-                <form id="contactForm" class="contact-form">
-                    <div class="form-group">
-                        <label for="name">Nombre completo *</label>
-                        <input type="text" id="name" name="name" required>
-                        <span class="error-message" id="nameError"></span>
+            <div class="container-form">
+                <h2>Envíanos un mensaje</h2>
+                <p>Completa el formulario y nos pondremos en contacto contigo pronto.</p>
+
+                <form action="good-bye.html" method="post">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">Nombre *</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lastName">Apellidos *</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label for="email">Correo electrónico *</label>
                         <input type="email" id="email" name="email" required>
-                        <span class="error-message" id="emailError"></span>
                     </div>
 
-                    <div class="form-group">
-                        <label for="subject">Asunto *</label>
-                        <input type="text" id="subject" name="subject" required>
-                        <span class="error-message" id="subjectError"></span>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone">Teléfono *</label>
+                            <input type="text" id="phone" name="phone" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="interest">Área de interés *</label>
+                            <select id="interest" name="interest" required>
+                                <option value="" disabled selected>Selecciona un área</option>
+                                <option value="ingenieria">Ingeniería</option>
+                                <option value="diseño">Diseño</option>
+                                <option value="ciencias">Ciencias Básicas</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label for="message">Mensaje *</label>
-                        <textarea id="message" name="message" rows="5" required></textarea>
-                        <span class="error-message" id="messageError"></span>
+                        <textarea id="message" name="message" rows="4" required></textarea>
                     </div>
 
-                    <button type="submit" class="submit-button">Enviar mensaje</button>
+                    <div>
+                        <button type="submit" class="submit-button">
+                            <img src="img/send-icon.svg" alt=""> Enviar mensaje
+                        </button>
+                    </div>
+
                 </form>
+
 
                 <div id="successMessage" class="success-message" style="display: none;">
                     <h3>¡Mensaje enviado exitosamente!</h3>
@@ -59,6 +104,39 @@
                 </div>
             </div>
         </section>
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="icon-wrapper">
+                    <img src="img/phone2-icon.svg" alt="icono telefono">
+                </div>
+
+                <h3>Teléfono</h3>
+                <p>+57 312 673 7377 <br> +57 320 830 7330
+                </p>
+            </div>
+            <div class="feature-item">
+                <div class="icon-wrapper">
+                    <img src="img/mail-icon.svg" alt="icono mail">
+                </div>
+                <h3>Email</h3>
+                <p>contacto@unisalle.edu.co <br>admisiones@unisalle.edu.co
+                </p>
+            </div>
+            <div class="feature-item">
+                <div class="icon-wrapper">
+                    <img src="img/clock-icon.svg" alt="icono reloj">
+                </div>
+                <h3>Horarios</h3>
+                <p>Lunes a Viernes: 8:00 - 18:00 <br>Sábados: 9:00 - 14:00</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon-wrapper">
+                    <img src="img/map-icon.svg" alt="icono pin mapa">
+                </div>
+                <h3>Nuestras sedes</h3>
+                <p>Chapinero - Candelaria <br>Norte - Yopal/Casanare</p>
+            </div>
+        </div>
     </main>
 
     <footer>
@@ -69,4 +147,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
