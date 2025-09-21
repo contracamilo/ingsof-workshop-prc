@@ -398,6 +398,73 @@ Chequeo de salud:
 http://localhost:3000/api/health
 ```
 
+### Despliegue en Render (Free Tier)
+
+Este proyecto incluye un `render.yaml` para desplegarlo como servicio Docker en [Render](https://render.com). En el plan *free* NO hay discos persistentes, por lo que la base SQLite se recreará en cada redeploy o reinicio. Es suficiente para demostración académica.
+
+#### Pasos rápidos
+
+1. Asegura que el archivo `render.yaml` esté en la raíz y haz push al repositorio (GitHub recomendado).
+2. En el dashboard de Render: New → Blueprint → selecciona el repo.
+3. Revisa la vista previa del servicio `u-la-salle-contact` y haz Deploy.
+4. Espera a que el build termine y visita la URL pública.
+5. Verifica `https://<tu-app>.onrender.com/api/health`.
+6. Abre `contact.html`, envía un formulario y consulta `https://<tu-app>.onrender.com/api/contacts` para ver el registro (mientras dure la sesión del contenedor).
+
+#### Blueprint simplificado (free tier)
+
+```yaml
+services:
+  - type: web
+    name: u-la-salle-contact
+    runtime: docker
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "3000"
+      - key: DB_FILE
+        value: /data/contacts.db
+    healthCheckPath: /api/health
+```
+
+#### Notas importantes
+
+- La ruta `/data/contacts.db` vive en un filesystem efímero; no confíes en la persistencia.
+- Cada redeploy limpia los datos previos (ideal para pruebas limpias).
+- Si necesitas persistencia real: actualizar a un plan con discos y reintroducir la sección `disk:` o migrar a Postgres.
+- `DB_FILE` puede cambiarse por otra ruta interna si lo deseas (no afecta el comportamiento efímero).
+
+#### Flujo de redeploy limpio
+
+1. Realiza cambios de código y `git push`.
+2. Render inicia un nuevo build automáticamente (autoDeploy: true).
+3. Tras el nuevo contenedor, la base vuelve a inicializarse vacía.
+
+#### Migrar a persistencia (futuro)
+
+- Añadir en `render.yaml` (solo en plan con soporte):
+
+```yaml
+    disk:
+      name: contact-db
+      mountPath: /data
+      sizeGB: 1
+```
+
+- Mantener `DB_FILE=/data/contacts.db`.
+
+#### Verificación mínima post-deploy
+
+| Endpoint | Esperado |
+|----------|----------|
+| `/api/health` | 200 + JSON `{ success: true }` |
+| `/contact.html` | Formulario visible |
+| Submit formulario | Redirección a `good-bye.html?id=<n>` |
+| `/api/contacts` | Lista incluye el nuevo registro |
+
+Si algo falla, revisar logs en Render (Build Logs y Runtime Logs) y reconstruir limpiando caché.
+
 ## Desarrollo
 
 ### Consultar la base de datos (SQLite)

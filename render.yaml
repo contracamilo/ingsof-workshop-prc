@@ -4,20 +4,16 @@
 services:
   - type: web
     name: u-la-salle-contact
-    runtime: docker        # Declarar runtime docker (sustituye env: docker)
-    plan: free             # Ajusta si necesitas más recursos (starter, etc.)
-    region: oregon         # Cambia según preferencia/región cercana
+    runtime: docker        # Ejecuta con tu Dockerfile
+    plan: free             # Free tier: sin discos persistentes
+    region: oregon
     autoDeploy: true
-    dockerCommand: ""      # Usa el CMD del Dockerfile
+    dockerCommand: ""      # Usa CMD del Dockerfile
     envVars:
       - key: PORT
         value: "3000"
       - key: DB_FILE
         value: /data/contacts.db
-    disk:
-      name: contact-db
-      mountPath: /data
-      sizeGB: 1            # Incrementa si crece tu base
+    # IMPORTANTE (free tier): No se puede usar 'disk'. El archivo SQLite en /data será EFÍMERO.
+    # Cada redeploy / apagado prolongado puede recrear la base. Si necesitas persistencia -> upgrade + agregar 'disk'.
     healthCheckPath: /api/health
-    # healthCheckTimeout: 1000   # Opcional
-    # healthCheckInterval: 10    # Opcional
