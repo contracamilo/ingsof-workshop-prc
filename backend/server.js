@@ -51,6 +51,8 @@ function initializeDatabase() {
             email TEXT NOT NULL,
             subject TEXT NOT NULL,
             message TEXT NOT NULL,
+            phone TEXT,
+            interest TEXT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
@@ -60,6 +62,9 @@ function initializeDatabase() {
             console.error('Error creating table:', err.message);
         } else {
             console.log('Contacts table ready');
+            // Attempt to add new columns if migrating from older schema
+            db.run("ALTER TABLE contacts ADD COLUMN phone TEXT", () => {});
+            db.run("ALTER TABLE contacts ADD COLUMN interest TEXT", () => {});
         }
     });
 }
@@ -73,42 +78,64 @@ app.get('/contact', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'contact.html'));
 });
 
-app.post('/api/contact', (req, res) => {
-    const { name, email, subject, message, timestamp } = req.body;
-    if (!name || !email || !subject || !message) {
-        return res.status(400).json({ success: false, message: 'Todos los campos son obligatorios' });
+function validateAndInsertContact({ firstName, lastName, email, interest, phone, message }) {
+    const name = `${(firstName||'').trim()} ${(lastName||'').trim()}`.trim();
+    const subject = interest ? `Interés: ${interest}` : 'Contacto';
+    const timestamp = new Date().toISOString();
+    if (!name || !email || !message) {
+        return { error: 'Nombre, correo y mensaje son obligatorios' };
     }
-    if (name.length < 2 || name.length > 100) {
-        return res.status(400).json({ success: false, message: 'El nombre debe tener entre 2 y 100 caracteres' });
+    if (name.length < 2 || name.length > 120) {
+        return { error: 'El nombre debe tener entre 2 y 120 caracteres' };
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        return res.status(400).json({ success: false, message: 'Correo electrónico inválido' });
+        return { error: 'Correo electrónico inválido' };
     }
-    if (subject.length < 5 || subject.length > 200) {
-        return res.status(400).json({ success: false, message: 'El asunto debe tener entre 5 y 200 caracteres' });
+    if (message.length < 5 || message.length > 2000) {
+        return { error: 'El mensaje debe tener entre 5 y 2000 caracteres' };
     }
-    if (message.length < 10 || message.length > 1000) {
-        return res.status(400).json({ success: false, message: 'El mensaje debe tener entre 10 y 1000 caracteres' });
-    }
-
     const insertSQL = `
-        INSERT INTO contacts (name, email, subject, message, timestamp)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO contacts (name, email, subject, message, phone, interest, timestamp)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
-    const params = [
-        name.trim(),
-        email.trim(),
-        subject.trim(),
-        message.trim(),
-        timestamp || new Date().toISOString()
-    ];
+    return { insertSQL, params: [name, email.trim(), subject, message.trim(), (phone||'').trim(), (interest||'').trim(), timestamp] };
+}
+
+// API JSON original
+app.post('/api/contact', (req, res) => {
+    const { error, insertSQL, params } = validateAndInsertContact(req.body);
+    if (error) return res.status(400).json({ success: false, message: error });
     db.run(insertSQL, params, function (err) {
         if (err) {
             console.error('Database error:', err.message);
             return res.status(500).json({ success: false, message: 'Error interno del servidor' });
         }
         res.json({ success: true, message: 'Mensaje enviado exitosamente', id: this.lastID });
+    });
+});
+
+// Manejo de formulario HTML (POST desde contact.html)
+app.post('/good-bye.html', (req, res) => {
+    const formMap = {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        interest: req.body.interest,
+        phone: req.body.phone,
+        message: req.body.message
+    };
+    const { error, insertSQL, params } = validateAndInsertContact(formMap);
+    if (error) {
+        return res.status(400).send(`<html><body><h1>Error</h1><p>${error}</p><a href=\"/contact.html\">Volver</a></body></html>`);
+    }
+    db.run(insertSQL, params, function (err) {
+        if (err) {
+            console.error('Database error:', err.message);
+            return res.status(500).send('<h1>Error interno</h1>');
+        }
+        // Redirigir con 303 para evitar repost al refrescar
+        res.redirect(303, '/good-bye.html?id=' + this.lastID);
     });
 });
 

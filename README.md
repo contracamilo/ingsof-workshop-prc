@@ -13,10 +13,21 @@ Una aplicación web simple con formulario de contacto desarrollada con HTML, CSS
 
 ## Campos del Formulario
 
-- **Nombre completo** (obligatorio, 2-100 caracteres)
-- **Correo electrónico** (obligatorio, formato válido)
-- **Asunto** (obligatorio, 5-200 caracteres)
-- **Mensaje** (obligatorio, 10-1000 caracteres)
+Actualmente hay dos flujos posibles de envío de datos:
+
+1. Envío nativo del formulario HTML (`contact.html`) que hace `POST /good-bye.html` (el backend intercepta, guarda y redirige con 303 a la misma página de agradecimiento).
+2. Envío vía JavaScript (`script.js`) al endpoint JSON `POST /api/contact` (flujo original con validación en tiempo real y manejo de estado en la misma página).
+
+### Campos soportados (esquema actual)
+
+- **firstName** (Nombre, obligatorio, 2-100 caracteres)
+- **lastName** (Apellidos, obligatorio, 2-100 caracteres)
+- **email** (obligatorio, formato válido)
+- **phone** (obligatorio, normalizado a dígitos y +, longitud razonable 5-20)
+- **interest** (obligatorio, valor de lista desplegable)
+- **message** (obligatorio, 10-1000 caracteres)
+
+El flujo JavaScript anterior usaba: `name`, `subject`, `message`. Para mantener compatibilidad el backend sigue aceptando `name` y `subject` en `POST /api/contact`, pero el formulario HTML actual usa los campos nuevos detallados arriba.
 
 ## Ejecución (Solo Docker)
 
@@ -102,13 +113,13 @@ DB_FILE=/data/custom.sqlite docker compose up -d --build
 
 ### Consultas a la base de datos
 
-Últimos registros:
+Últimos registros (solo columnas originales, ver nota más abajo):
 
 ```bash
 docker compose exec web sqlite3 -header -column /data/contacts.db "SELECT id,name,subject FROM contacts ORDER BY id DESC LIMIT 5;"
 ```
 
-Estadísticas:
+Estadísticas (totales generales):
 
 ```bash
 docker compose exec web node query.js stats
@@ -230,12 +241,42 @@ docker compose logs -f web
 └── README.md               # Documentación
 ```
 
-## API Endpoints
+### API Endpoints
 
-- `POST /api/contact` - Enviar formulario de contacto
+- `POST /api/contact` - Enviar formulario de contacto (JSON). Acepta esquema antiguo (`name`,`email`,`subject`,`message`) y parcialmente el nuevo (`firstName`/`lastName` se combinan en `name` si se envían).
+- `POST /good-bye.html` - Envío nativo del formulario HTML. Inserta (`firstName`,`lastName`,`email`,`phone`,`interest`,`message`) y devuelve redirect 303 a `/good-bye.html?id=<id_insertado>`.
 - `GET /api/contacts` - Obtener todos los contactos
 - `GET /api/stats` - Obtener estadísticas de contactos
 - `GET /api/health` - Estado del servidor
+
+Próximos (sugeridos, aún no implementados):
+
+- `GET /api/contact/:id` - Obtener un contacto específico
+
+### Esquema de la tabla `contacts`
+
+La tabla puede haber sido creada inicialmente sin `phone` e `interest`. Durante el arranque el servidor intenta ejecutar `ALTER TABLE` para añadirlos si faltan. El orden final típico (consultar con `PRAGMA table_info(contacts);`) es:
+
+```
+id, name, email, subject, message, timestamp, created_at, phone, interest
+```
+
+Notas:
+
+- Las nuevas columnas `phone` e `interest` pueden aparecer al final por la naturaleza del `ALTER TABLE`.
+- Cuando se usa el formulario HTML, el backend construye `name = firstName + ' ' + lastName`.
+- El campo `subject` queda vacío en el flujo nuevo (puedes reutilizar `interest` como categoría). Se podría en el futuro derivar `subject` = `interest`.
+
+### Diferencias entre flujos de envío
+
+| Aspecto | POST /good-bye.html (HTML nativo) | POST /api/contact (fetch JS) |
+|---------|-----------------------------------|------------------------------|
+| Campos enviados | firstName,lastName,email,phone,interest,message | name,email,subject,message (o combinación de firstName/lastName si se adaptara) |
+| Respuesta | Redirect 303 a página de agradecimiento | JSON `{ success: true }` |
+| Experiencia usuario | Carga nueva página | Mensaje in-page sin recarga |
+| Uso de `script.js` | No (a menos que agregues validación manual) | Sí (validación + feedback inmediato) |
+
+Para unificar, podrías: (a) actualizar `contact.html` para usar `id="contactForm"` y los nombres esperados por `script.js`, o (b) adaptar `script.js` a los nuevos nombres y cambiar el `action` del formulario a `#` (dejando que JS haga el envío). Este README refleja el estado híbrido actual.
 
 ## Tecnologías Utilizadas
 
