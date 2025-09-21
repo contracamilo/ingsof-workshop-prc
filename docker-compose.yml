@@ -10,7 +10,6 @@ services:
       - DB_FILE=/data/contacts.db
     volumes:
       - db_data:/data
-      - .:/app:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]

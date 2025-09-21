@@ -41,16 +41,19 @@ function runSQL(sql) {
 
 function stats() {
   const sql = `SELECT 
-      COUNT(*) total,
-      COUNT(CASE WHEN date(created_at)=date('now') THEN 1 END) hoy,
-      COUNT(CASE WHEN date(created_at)>=date('now','-7 days') THEN 1 END) ultimos_7_dias
+      COUNT(*) AS total,
+      COUNT(CASE WHEN date(created_at)=date('now') THEN 1 END) AS hoy,
+      COUNT(CASE WHEN date(created_at)>=date('now','-7 days') THEN 1 END) AS ultimos_7_dias,
+      COUNT(CASE WHEN phone IS NOT NULL AND trim(phone)<>'' THEN 1 END) AS con_telefono,
+      COUNT(CASE WHEN interest IS NOT NULL AND trim(interest)<>'' THEN 1 END) AS con_interes
     FROM contacts`;
   runSQL(sql);
 }
 
 function last(n = 5) {
-  const sql = `SELECT id,name,email,subject,substr(message,1,40)||'...' AS mensaje,timestamp,created_at
-               FROM contacts ORDER BY id DESC LIMIT ${Number(n)||5}`;
+  const limit = Number(n) || 5;
+  const sql = `SELECT id,name,email,subject,phone,interest,substr(message,1,40)||'...' AS mensaje,timestamp,created_at
+               FROM contacts ORDER BY id DESC LIMIT ${limit}`;
   runSQL(sql);
 }
 

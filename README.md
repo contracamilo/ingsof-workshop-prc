@@ -13,10 +13,21 @@ Una aplicación web simple con formulario de contacto desarrollada con HTML, CSS
 
 ## Campos del Formulario
 
-- **Nombre completo** (obligatorio, 2-100 caracteres)
-- **Correo electrónico** (obligatorio, formato válido)
-- **Asunto** (obligatorio, 5-200 caracteres)
-- **Mensaje** (obligatorio, 10-1000 caracteres)
+Actualmente hay dos flujos posibles de envío de datos:
+
+1. Envío nativo del formulario HTML (`contact.html`) que hace `POST /good-bye.html` (el backend intercepta, guarda y redirige con 303 a la misma página de agradecimiento).
+2. Envío vía JavaScript (`script.js`) al endpoint JSON `POST /api/contact` (flujo original con validación en tiempo real y manejo de estado en la misma página).
+
+### Campos soportados (esquema actual)
+
+- **firstName** (Nombre, obligatorio, 2-100 caracteres)
+- **lastName** (Apellidos, obligatorio, 2-100 caracteres)
+- **email** (obligatorio, formato válido)
+- **phone** (obligatorio, normalizado a dígitos y +, longitud razonable 5-20)
+- **interest** (obligatorio, valor de lista desplegable)
+- **message** (obligatorio, 10-1000 caracteres)
+
+El flujo JavaScript anterior usaba: `name`, `subject`, `message`. Para mantener compatibilidad el backend sigue aceptando `name` y `subject` en `POST /api/contact`, pero el formulario HTML actual usa los campos nuevos detallados arriba.
 
 ## Ejecución (Solo Docker)
 
@@ -102,13 +113,13 @@ DB_FILE=/data/custom.sqlite docker compose up -d --build
 
 ### Consultas a la base de datos
 
-Últimos registros:
+Últimos registros (solo columnas originales, ver nota más abajo):
 
 ```bash
 docker compose exec web sqlite3 -header -column /data/contacts.db "SELECT id,name,subject FROM contacts ORDER BY id DESC LIMIT 5;"
 ```
 
-Estadísticas:
+Estadísticas (totales generales):
 
 ```bash
 docker compose exec web node query.js stats
@@ -144,9 +155,59 @@ docker compose logs -f
 curl -i http://localhost:3000/api/health
 ```
 
+### Modo Desarrollo (Hot Reload)
+
+`docker-compose.override.yml` monta solo los archivos fuente que cambian y deja los `node_modules` compilados dentro de la imagen (evitando errores nativos de sqlite3):
+
+```yaml
+services:
+  web:
+    environment:
+      NODE_ENV: development
+    command: npx nodemon /app/backend/server.js
+    volumes:
+      - ./backend/server.js:/app/backend/server.js
+      - ./backend/query.js:/app/backend/query.js
+      - ./index.html:/app/index.html
+      - ./contact.html:/app/contact.html
+      - ./styles.css:/app/styles.css
+      - ./script.js:/app/script.js
+```
+
+Uso (el override se aplica automáticamente):
+
+```bash
+docker compose up -d
+```
+
+Para ejecutar sin hot reload (imagen “limpia”):
+
+```bash
+docker compose -f docker-compose.yml up -d --build
+```
+
+### Troubleshooting (Problemas Comunes)
+
+| Problema | Causa Probable | Solución |
+|----------|----------------|----------|
+| `Error: Error loading shared library ... node_sqlite3.node (Exec format error)` | Bind mount sobrescribe `node_modules` con binarios compilados para macOS / diferente libc | Usar imagen sin bind mount (remover `.:/app`), o el override con volumen anónimo `/app/backend/node_modules` |
+| `curl: (7) Failed to connect` | Contenedor no arrancó / puerto ocupado / healthcheck falló | Revisar `docker compose logs -f web` y liberar puerto 3000 |
+| Cambios no se reflejan | Estás usando solo `docker-compose.yml` (sin override) | Reiniciar con override (hot reload) o reconstruir imagen |
+| DB se pierde | Eliminaste volumen `db_data` con `down -v` | No uses `-v` si quieres persistir; o respalda la base antes |
+
+#### Nota de compatibilidad (sqlite3)
+
+Se cambió la imagen base de `node:18-alpine` a `node:18` (Debian) para evitar errores "Exec format error" con el módulo nativo `sqlite3` cuando el host (macOS ARM) generaba binarios incompatibles. Debian/glibc ofrece binarios precompilados más estables. Si deseas volver a Alpine, deberás asegurarte de no montar `node_modules` y posiblemente ejecutar `npm rebuild sqlite3 --build-from-source` dentro de la imagen.
+
+Ver logs detallados:
+
+```bash
+docker compose logs -f web
+```
+
 ### Estructura resumida
 
-```
+```text
 ├── index.html
 ├── contact.html
 ├── styles.css
@@ -164,7 +225,7 @@ curl -i http://localhost:3000/api/health
 
 ## Estructura del Proyecto
 
-```
+```text
 ├── index.html              # Página principal
 ├── contact.html            # Formulario de contacto
 ├── styles.css              # Estilos CSS
@@ -180,12 +241,42 @@ curl -i http://localhost:3000/api/health
 └── README.md               # Documentación
 ```
 
-## API Endpoints
+### API Endpoints
 
-- `POST /api/contact` - Enviar formulario de contacto
+- `POST /api/contact` - Enviar formulario de contacto (JSON). Acepta esquema antiguo (`name`,`email`,`subject`,`message`) y parcialmente el nuevo (`firstName`/`lastName` se combinan en `name` si se envían).
+- `POST /good-bye.html` - Envío nativo del formulario HTML. Inserta (`firstName`,`lastName`,`email`,`phone`,`interest`,`message`) y devuelve redirect 303 a `/good-bye.html?id=<id_insertado>`.
 - `GET /api/contacts` - Obtener todos los contactos
 - `GET /api/stats` - Obtener estadísticas de contactos
 - `GET /api/health` - Estado del servidor
+
+Próximos (sugeridos, aún no implementados):
+
+- `GET /api/contact/:id` - Obtener un contacto específico
+
+### Esquema de la tabla `contacts`
+
+La tabla puede haber sido creada inicialmente sin `phone` e `interest`. Durante el arranque el servidor intenta ejecutar `ALTER TABLE` para añadirlos si faltan. El orden final típico (consultar con `PRAGMA table_info(contacts);`) es:
+
+```
+id, name, email, subject, message, timestamp, created_at, phone, interest
+```
+
+Notas:
+
+- Las nuevas columnas `phone` e `interest` pueden aparecer al final por la naturaleza del `ALTER TABLE`.
+- Cuando se usa el formulario HTML, el backend construye `name = firstName + ' ' + lastName`.
+- El campo `subject` queda vacío en el flujo nuevo (puedes reutilizar `interest` como categoría). Se podría en el futuro derivar `subject` = `interest`.
+
+### Diferencias entre flujos de envío
+
+| Aspecto | POST /good-bye.html (HTML nativo) | POST /api/contact (fetch JS) |
+|---------|-----------------------------------|------------------------------|
+| Campos enviados | firstName,lastName,email,phone,interest,message | name,email,subject,message (o combinación de firstName/lastName si se adaptara) |
+| Respuesta | Redirect 303 a página de agradecimiento | JSON `{ success: true }` |
+| Experiencia usuario | Carga nueva página | Mensaje in-page sin recarga |
+| Uso de `script.js` | No (a menos que agregues validación manual) | Sí (validación + feedback inmediato) |
+
+Para unificar, podrías: (a) actualizar `contact.html` para usar `id="contactForm"` y los nombres esperados por `script.js`, o (b) adaptar `script.js` a los nuevos nombres y cambiar el `action` del formulario a `#` (dejando que JS haga el envío). Este README refleja el estado híbrido actual.
 
 ## Tecnologías Utilizadas
 
@@ -280,7 +371,7 @@ Conservar datos (volumen `db_data`) incluso tras `down`. Para borrarlo:
 docker compose down -v
 ```
 
-#### Variables de entorno
+#### Variables de entorno (docker-compose)
 
 Copiar el archivo `.env.example` a `.env` y ajustar según necesidad:
 
@@ -297,13 +388,13 @@ Variables principales:
 
 Abrir en el navegador:
 
-```
+```text
 http://localhost:3000
 ```
 
 Chequeo de salud:
 
-```
+```text
 http://localhost:3000/api/health
 ```
 
