@@ -1,0 +1,23 @@
+# Blueprint de Render para desplegar la app con Docker
+# Docs: https://render.com/docs/infrastructure-as-code
+
+services:
+  - type: web
+    name: u-la-salle-contact
+    runtime: docker        # Declarar runtime docker (sustituye env: docker)
+    plan: free             # Ajusta si necesitas más recursos (starter, etc.)
+    region: oregon         # Cambia según preferencia/región cercana
+    autoDeploy: true
+    dockerCommand: ""      # Usa el CMD del Dockerfile
+    envVars:
+      - key: PORT
+        value: "3000"
+      - key: DB_FILE
+        value: /data/contacts.db
+    disk:
+      name: contact-db
+      mountPath: /data
+      sizeGB: 1            # Incrementa si crece tu base
+    healthCheckPath: /api/health
+    # healthCheckTimeout: 1000   # Opcional
+    # healthCheckInterval: 10    # Opcional
