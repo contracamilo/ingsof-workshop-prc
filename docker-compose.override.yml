@@ -14,3 +14,4 @@ services:
       - ./contact.html:/app/contact.html
       - ./styles.css:/app/styles.css
       - ./script.js:/app/script.js
+      - ./img:/app/img
