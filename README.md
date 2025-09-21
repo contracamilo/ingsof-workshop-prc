@@ -144,9 +144,59 @@ docker compose logs -f
 curl -i http://localhost:3000/api/health
 ```
 
+### Modo Desarrollo (Hot Reload)
+
+`docker-compose.override.yml` monta solo los archivos fuente que cambian y deja los `node_modules` compilados dentro de la imagen (evitando errores nativos de sqlite3):
+
+```yaml
+services:
+  web:
+    environment:
+      NODE_ENV: development
+    command: npx nodemon /app/backend/server.js
+    volumes:
+      - ./backend/server.js:/app/backend/server.js
+      - ./backend/query.js:/app/backend/query.js
+      - ./index.html:/app/index.html
+      - ./contact.html:/app/contact.html
+      - ./styles.css:/app/styles.css
+      - ./script.js:/app/script.js
+```
+
+Uso (el override se aplica automáticamente):
+
+```bash
+docker compose up -d
+```
+
+Para ejecutar sin hot reload (imagen “limpia”):
+
+```bash
+docker compose -f docker-compose.yml up -d --build
+```
+
+### Troubleshooting (Problemas Comunes)
+
+| Problema | Causa Probable | Solución |
+|----------|----------------|----------|
+| `Error: Error loading shared library ... node_sqlite3.node (Exec format error)` | Bind mount sobrescribe `node_modules` con binarios compilados para macOS / diferente libc | Usar imagen sin bind mount (remover `.:/app`), o el override con volumen anónimo `/app/backend/node_modules` |
+| `curl: (7) Failed to connect` | Contenedor no arrancó / puerto ocupado / healthcheck falló | Revisar `docker compose logs -f web` y liberar puerto 3000 |
+| Cambios no se reflejan | Estás usando solo `docker-compose.yml` (sin override) | Reiniciar con override (hot reload) o reconstruir imagen |
+| DB se pierde | Eliminaste volumen `db_data` con `down -v` | No uses `-v` si quieres persistir; o respalda la base antes |
+
+#### Nota de compatibilidad (sqlite3)
+
+Se cambió la imagen base de `node:18-alpine` a `node:18` (Debian) para evitar errores "Exec format error" con el módulo nativo `sqlite3` cuando el host (macOS ARM) generaba binarios incompatibles. Debian/glibc ofrece binarios precompilados más estables. Si deseas volver a Alpine, deberás asegurarte de no montar `node_modules` y posiblemente ejecutar `npm rebuild sqlite3 --build-from-source` dentro de la imagen.
+
+Ver logs detallados:
+
+```bash
+docker compose logs -f web
+```
+
 ### Estructura resumida
 
-```
+```text
 ├── index.html
 ├── contact.html
 ├── styles.css
@@ -164,7 +214,7 @@ curl -i http://localhost:3000/api/health
 
 ## Estructura del Proyecto
 
-```
+```text
 ├── index.html              # Página principal
 ├── contact.html            # Formulario de contacto
 ├── styles.css              # Estilos CSS
@@ -280,7 +330,7 @@ Conservar datos (volumen `db_data`) incluso tras `down`. Para borrarlo:
 docker compose down -v
 ```
 
-#### Variables de entorno
+#### Variables de entorno (docker-compose)
 
 Copiar el archivo `.env.example` a `.env` y ajustar según necesidad:
 
@@ -297,13 +347,13 @@ Variables principales:
 
 Abrir en el navegador:
 
-```
+```text
 http://localhost:3000
 ```
 
 Chequeo de salud:
 
-```
+```text
 http://localhost:3000/api/health
 ```
 

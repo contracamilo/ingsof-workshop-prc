@@ -1,0 +1,16 @@
+## Override de desarrollo (hot reload)
+## Monta solamente los archivos fuente que cambian y mantiene los node_modules
+## compilados dentro de la imagen para evitar errores nativos de sqlite3.
+
+services:
+  web:
+    environment:
+      NODE_ENV: development
+    command: npx nodemon /app/backend/server.js
+    volumes:
+      - ./backend/server.js:/app/backend/server.js
+      - ./backend/query.js:/app/backend/query.js
+      - ./index.html:/app/index.html
+      - ./contact.html:/app/contact.html
+      - ./styles.css:/app/styles.css
+      - ./script.js:/app/script.js

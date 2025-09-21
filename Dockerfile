@@ -1,5 +1,5 @@
 # Etapa base
-FROM node:18-alpine
+FROM node:18
 
 WORKDIR /app/backend
 
@@ -9,8 +9,15 @@ ENV NODE_ENV=production \
     DB_FILE=/data/contacts.db
 
 COPY backend/package*.json ./
-RUN npm install --production && npm cache clean --force \
-    && apk add --no-cache sqlite
+# Instalar dependencias del sistema y luego dependencias de producción
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends sqlite3 ca-certificates build-essential python3; \
+    rm -rf /var/lib/apt/lists/*; \
+    npm install --production; \
+    npm cache clean --force; \
+    # Asegurar que el binario nativo de sqlite3 se compiló para la imagen correcta
+    npm rebuild sqlite3 --build-from-source || true
 
 # Copiar código fuente (solo backend para deps y raíz para estáticos)
 COPY backend/. ./
