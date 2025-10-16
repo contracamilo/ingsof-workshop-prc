@@ -478,6 +478,17 @@ p {
     flex-direction: column;
 }
 
+::placeholder {
+  color: #9aa0a6; /* gris suave */
+  opacity: 1; /* asegúrate de que no se vea tenue */
+  transition: color 0.3s ease;
+}
+
+input:focus::placeholder,
+textarea:focus::placeholder {
+  color: transparent; /* desaparece suavemente al escribir */
+}
+
 .form-group label {
     font-weight: 600;
     margin-bottom: 0.3rem;
