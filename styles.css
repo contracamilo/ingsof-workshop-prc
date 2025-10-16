@@ -467,6 +467,24 @@ p {
     color: #555;
 }
 
+/* --- Animación de entrada suave --- */
+@keyframes aparecerSuave {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Aplica la animación al contenedor del formulario --- */
+form {
+  animation: aparecerSuave 0.7s ease-out;
+}
+
+
 .form-row {
     display: flex;
     gap: 1rem;
@@ -488,6 +506,7 @@ input:focus::placeholder,
 textarea:focus::placeholder {
   color: transparent; /* desaparece suavemente al escribir */
 }
+
 
 .form-group label {
     font-weight: 600;
