@@ -437,7 +437,6 @@ p {
     text-align: center;
 }
 
-
 .contact-form-section {
     padding: 2rem;
     background-color: #0079DE10;
@@ -467,6 +466,53 @@ p {
     color: #555;
 }
 
+/* --- Animación de entrada suave --- */
+@keyframes aparecerSuave {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Aplica la animación al contenedor del formulario --- */
+form {
+  animation: aparecerSuave 0.7s ease-out;
+}
+
+.form-top {
+  display: flex;
+  justify-content: flex-end; /* 👈 lo manda a la derecha */
+  margin-bottom: 10px;
+}
+
+.reset-button {
+  background-color: #f5f7fa00;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reset-button img {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0.3); /* tono gris oscuro */
+}
+
+.reset-button:hover {
+  background-color: #f0f0f0;
+  border-color: #cbd5e1;
+  transform: scale(1.05);
+}
+
 .form-row {
     display: flex;
     gap: 1rem;
@@ -476,6 +522,17 @@ p {
     flex: 1;
     display: flex;
     flex-direction: column;
+}
+
+::placeholder {
+  color: #9aa0a6; /* gris suave */
+  opacity: 1; /* asegúrate de que no se vea tenue */
+  transition: color 0.3s ease;
+}
+
+input:focus::placeholder,
+textarea:focus::placeholder {
+  color: transparent; /* desaparece suavemente al escribir */
 }
 
 .form-group label {
