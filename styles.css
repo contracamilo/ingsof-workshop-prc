@@ -437,7 +437,6 @@ p {
     text-align: center;
 }
 
-
 .contact-form-section {
     padding: 2rem;
     background-color: #0079DE10;
@@ -484,6 +483,35 @@ form {
   animation: aparecerSuave 0.7s ease-out;
 }
 
+.form-top {
+  display: flex;
+  justify-content: flex-end; /* 👈 lo manda a la derecha */
+  margin-bottom: 10px;
+}
+
+.reset-button {
+  background-color: #f5f7fa00;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reset-button img {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0.3); /* tono gris oscuro */
+}
+
+.reset-button:hover {
+  background-color: #f0f0f0;
+  border-color: #cbd5e1;
+  transform: scale(1.05);
+}
 
 .form-row {
     display: flex;
@@ -506,7 +534,6 @@ input:focus::placeholder,
 textarea:focus::placeholder {
   color: transparent; /* desaparece suavemente al escribir */
 }
-
 
 .form-group label {
     font-weight: 600;
